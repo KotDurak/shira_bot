@@ -57,7 +57,6 @@ async def migrate():
         # Начисляем 80 бесплатных всем существующим
         await db.execute("UPDATE users SET message_credits = 80 WHERE message_credits IS NULL OR message_credits = 0")
         await db.commit()
-        print("✅ Начислено 80 бесплатных сообщений всем пользователям")
 
     print("\n🎉 Миграция завершена!")
 

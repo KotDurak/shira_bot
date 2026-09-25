@@ -14,7 +14,6 @@ KEEP_AFTER_SUMMARY = 6
 
 
 async def summarize_conversation(client: AsyncOpenAI, user_id: int, model_name: str):
-    """Фоновая суммаризация диалога в долгосрочную память"""
     try:
         user = await get_or_create_user(user_id)
         current_memory = user["long_term_memory"]
@@ -23,7 +22,6 @@ async def summarize_conversation(client: AsyncOpenAI, user_id: int, model_name: 
         if not messages:
             return
 
-        # Формируем текст новых сообщений
         new_messages_text = "\n".join([f"{role}: {content}" for role, content in messages])
 
         prompt = SUMMARIZATION_PROMPT.format(
@@ -34,22 +32,24 @@ async def summarize_conversation(client: AsyncOpenAI, user_id: int, model_name: 
         response = await client.chat.completions.create(
             model=model_name,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,  # Низкая температура для фактологичности
+            temperature=0.3,
+            max_tokens=1000,  # === ДОБАВИТЬ: жёсткий лимит на вывод (~700-800 слов) ===
         )
 
         new_memory = response.choices[0].message.content.strip()
 
-        # Сохраняем обновлённую память
+        # === ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА: если память всё равно слишком длинная ===
+        MAX_MEMORY_LENGTH = 2000  # символов
+        if len(new_memory) > MAX_MEMORY_LENGTH:
+            # Можно либо обрезать, либо отправить повторный запрос с более жёстким промптом
+            new_memory = new_memory[:MAX_MEMORY_LENGTH - 3] + "..."
+        # ====================================================================
+
         await update_long_term_memory(user_id, new_memory)
-
-        # Чистим старые сообщения, оставляя только последние
         await clear_old_messages(user_id, keep_last=KEEP_AFTER_SUMMARY)
-
-        print(f"[Memory] Суммаризация для пользователя {user_id} завершена")
 
     except Exception as e:
         print(f"[Memory] Ошибка суммаризации для {user_id}: {e}")
-
 
 async def maybe_summarize(client: AsyncOpenAI, user_id: int, model_name: str):
     """Проверяет, нужна ли суммаризация, и запускает её в фоне"""

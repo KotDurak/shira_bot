@@ -50,12 +50,10 @@ def pick_random_image(category: str) -> Optional[str]:
     """
     folder_name = CATEGORY_FOLDERS.get(category)
     if not folder_name:
-        print(f"[Image] Неизвестная категория: {category}")
         return None
 
     folder_path = os.path.join(IMAGES_DIR, folder_name)
     if not os.path.isdir(folder_path):
-        print(f"[Image] Папка не найдена: {folder_path}")
         return None
 
     # Собираем все подходящие файлы
@@ -66,7 +64,6 @@ def pick_random_image(category: str) -> Optional[str]:
     ]
 
     if not files:
-        print(f"[Image] Папка '{folder_name}' пуста")
         return None
 
     chosen = random.choice(files)
@@ -89,8 +86,6 @@ async def send_image_from_category(
     try:
         photo = FSInputFile(image_path)
         await message.answer_photo(photo, caption=caption)
-        print(f"[Image] Отправлено: {image_path}")
         return True
     except Exception as e:
-        print(f"[Image] Ошибка отправки {image_path}: {e}")
         return False

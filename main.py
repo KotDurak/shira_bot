@@ -206,17 +206,15 @@ async def cmd_forget(message: types.Message):
 @dp.message(Command("memory"))
 async def cmd_memory(message: types.Message):
     user = await get_or_create_user(message.from_user.id)
+    summary_text = user.get("long_term_memory") or "Память пуста "
 
-    if user["long_term_memory"]:
-        await message.answer(
-            f"💭 <b>Вот что я помню о тебе:</b>\n\n{user['long_term_memory']}",
-            parse_mode="HTML"
-        )
-    else:
-        await message.answer(
-            "Хм, кажется, мы ещё недостаточно общались, чтобы я запомнила что-то важное. "
-            "Но я рада, что ты здесь! 💫"
-        )
+    # === ЗАЩИТА ОТ ДЛИННОГО СООБЩЕНИЯ ===
+    MAX_LENGTH = 4000
+    if len(summary_text) > MAX_LENGTH:
+        summary_text = summary_text[:MAX_LENGTH - 3] + "...\n\n⚠️ Память слишком большая, показана только часть."
+    # ====================================
+
+    await message.answer(text=summary_text)
 
 
 @dp.message()
