@@ -276,7 +276,7 @@ async def handle_message(message: types.Message):
         clean_text, image_category, image_caption = extract_image_marker(ai_text)
 
         await save_message(user_id, "assistant", clean_text)
-        await message.answer(clean_text, parse_mode="Markdown")
+        await send_safe_message(message, clean_text, parse_mode="Markdown")
 
         if image_category:
             await send_image_from_category(message, image_category, image_caption)
@@ -288,6 +288,31 @@ async def handle_message(message: types.Message):
         await message.answer(
             "Ой, кажется, я немного задумалась и запуталась... Попробуй ещё раз, я рядом. 💭"
         )
+
+
+async def send_safe_message(message: types.Message, text: str, parse_mode="Markdown"):
+    """Отправляет сообщение, разбивая на части, если оно > 3800 символов."""
+    MAX_LEN = 3800
+
+    if len(text) <= MAX_LEN:
+        return await message.answer(text, parse_mode=parse_mode)
+
+    # Режем строго по символам, но стараемся не ломать слова посередине
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + MAX_LEN
+        # Если мы внутри слова, откатываемся до последнего пробела
+        if end < len(text) and text[end] not in (' ', '\n', '.'):
+            last_space = text.rfind(' ', start, end)
+            if last_space != -1:
+                end = last_space + 1
+        chunks.append(text[start:end])
+        start = end
+
+    for i, chunk in enumerate(chunks):
+        suffix = f"\n\n*(...продолжение {i + 2}/{len(chunks)})*" if i < len(chunks) - 1 else ""
+        await message.answer(chunk + suffix, parse_mode=parse_mode)
 
 
 async def main():
