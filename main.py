@@ -297,7 +297,6 @@ async def send_safe_message(message: types.Message, text: str, parse_mode="Markd
     if len(text) <= MAX_LEN:
         return await message.answer(text, parse_mode=parse_mode)
 
-    # Режем строго по символам, но стараемся не ломать слова посередине
     chunks = []
     start = 0
     while start < len(text):
