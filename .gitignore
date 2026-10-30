@@ -2,4 +2,7 @@
 /.env
 /venv/
 .idea/
-? __pycache__/
+__pycache__/
+/shira_bot.db-shm
+/shira_bot.db-wal
+/logs/

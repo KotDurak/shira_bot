@@ -6,11 +6,11 @@ module.exports = {
 
       // ⚠️ ВАЖНО: Укажи здесь реальный путь к python.exe из твоего виртуального окружения
       // Пример: 'C:\\python\\shira_bot\\venv\\Scripts\\python.exe'
-      // Не забудь использовать двойные обратные слеши (\\) для Windows!
-      interpreter: 'C:\\projects\\shira_bot\\venv\\Scripts\\python.exe',
+      // Не забудь использовать двойные обратные слеши (\\) для Windows! D:\bots\shira_bot\venv
+      interpreter: 'D:\\bots\\shira_bot\\venv\\Scripts\\python.exe',
 
       // ⚠️ ВАЖНО: Укажи здесь реальную папку с проектом (где лежит main.py и shira_bot.db)
-      cwd: 'C:\\projects\\shira_bot',
+      cwd: 'D:\\bots\\shira_bot',
 
       // === СТРАТЕГИИ РЕАНИМАЦИИ ===
       autorestart: true,

@@ -27,19 +27,25 @@ IMAGE_MARKER_PATTERN = re.compile(
 )
 
 
-def extract_image_marker(text: str) -> Tuple[str, Optional[str], Optional[str]]:
+def extract_image_marker(text: str) -> tuple[str, str | None, str | None]:
     """
-    Извлекает маркер изображения из текста.
-    Возвращает: (очищенный текст, категория, подпись/капшн или None)
+    Ищет тег [IMAGE:category|prompt] или [IMAGE:category].
+    Возвращает: (очищенный текст, категория, визуальный промпт или None)
     """
-    match = IMAGE_MARKER_PATTERN.search(text)
+    # Регулярка ищет [IMAGE: что-то | что-то еще ] или просто [IMAGE: что-то ]
+    pattern = r'\[IMAGE:\s*([a-zA-Z_]+)(?:\|(.*?))?\]'
+    match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+
     if match:
-        category = match.group(1).lower().strip()
-        caption = match.group(2)
-        if caption:
-            caption = caption.strip()
-        clean_text = IMAGE_MARKER_PATTERN.sub('', text).strip()
-        return clean_text, category, caption
+        category = match.group(1).strip().lower()
+        visual_prompt = match.group(2).strip() if match.group(2) else ""
+
+        # Удаляем весь тег из основного текста, чтобы пользователь его не видел
+        clean_text = text.replace(match.group(0), "").strip()
+
+        return clean_text, category, visual_prompt
+
+    # Если тега нет, возвращаем исходный текст и None
     return text, None, None
 
 
